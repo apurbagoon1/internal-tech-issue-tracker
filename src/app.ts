@@ -1,6 +1,8 @@
 import express, { type Application, type Request, type Response } from 'express'
 import cors from "cors";
 
+import { AuthRoutes } from "./modules/auth/auth.route";
+
 const app : Application = express()
 
 app.use(cors());
@@ -13,5 +15,7 @@ app.get('/', (req : Request, res : Response) => {
     message: 'Internal Tech Issue Tracker API Running Successfully',
  }) 
 })
+
+app.use("/api/auth", AuthRoutes);
 
 export default app;
