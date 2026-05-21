@@ -4,3 +4,8 @@ export interface TSignupUser {
   password: string;
   role: "contributor" | "maintainer";
 }
+
+export interface TLoginUser {
+  email: string;
+  password: string;
+}
