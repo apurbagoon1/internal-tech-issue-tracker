@@ -9,8 +9,8 @@ app.use(express.json());
 app.get('/', (req : Request, res : Response) => {
   // res.send('Hello World!')
   res.status(200).json({ 
+    success: true,
     message: 'Internal Tech Issue Tracker API Running Successfully',
-    author: 'Apurba Goon',
  }) 
 })
 

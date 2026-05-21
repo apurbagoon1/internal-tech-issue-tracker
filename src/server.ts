@@ -1,11 +1,6 @@
-import dotenv from "dotenv";
-
-dotenv.config();
-
 import app from "./app";
-import pool from "./config/db";
-
-const PORT = process.env.PORT || 5000;
+import config from "./config";
+import { initDB, pool } from "./db";
 
 const startServer = async () => {
   try {
@@ -13,11 +8,12 @@ const startServer = async () => {
 
     console.log("Database Connected Successfully");
 
-    app.listen(PORT, () => {
-      console.log(`Example app listening on port ${PORT}`);
+    await initDB();
+
+    app.listen(config.port, () => {
+      console.log(`Server running on port ${config.port}`);
     });
-  } 
-  catch (error) {
+  } catch (error) {
     console.log("Failed to connect database", error);
   }
 };
