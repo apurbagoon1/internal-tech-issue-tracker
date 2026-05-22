@@ -13,7 +13,8 @@ const signupUser = async (req: Request, res: Response) => {
       message: "User registered successfully",
       data: result,
     });
-  } catch (error) {
+  } 
+  catch (error) {
     sendResponse(res, {
       success: false,
       statusCode: StatusCodes.BAD_REQUEST,
