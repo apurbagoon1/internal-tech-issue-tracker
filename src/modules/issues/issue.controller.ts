@@ -38,6 +38,37 @@ const createIssue = async (
   }
 };
 
+const getAllIssues = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const result =
+      await IssueServices.getAllIssuesFromDB(
+        req.query as Record<string, string>
+      );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Issues retrieved successfully",
+      data: result,
+    });
+  } 
+  catch (error) {
+    sendResponse(res, {
+      success: false,
+      statusCode:
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
+    });
+  }
+};
+
 export const IssueControllers = {
   createIssue,
+  getAllIssues,
 };

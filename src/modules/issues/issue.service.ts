@@ -35,6 +35,96 @@ const createIssueIntoDB = async (
   return result.rows[0];
 };
 
+const getAllIssuesFromDB = async (
+  query: Record<string, string>
+) => {
+  const { sort = "newest", type, status } = query;
+
+  let sqlQuery = `SELECT * FROM issues`;
+
+  const conditions: string[] = [];
+
+  const values: string[] = [];
+
+  if (type) {
+    values.push(type);
+
+    conditions.push(`type = $${values.length}`);
+  }
+
+  if (status) {
+    values.push(status);
+
+    conditions.push(`status = $${values.length}`);
+  }
+
+  if (conditions.length > 0) {
+    sqlQuery += ` WHERE ${conditions.join(" AND ")}`;
+  }
+
+  if (sort === "oldest") {
+    sqlQuery += ` ORDER BY created_at ASC`;
+  } else {
+    sqlQuery += ` ORDER BY created_at DESC`;
+  }
+
+  const issueResult = await pool.query(
+    sqlQuery,
+    values
+  );
+
+  const issues = issueResult.rows;
+
+  const reporterIds = [
+    ...new Set(
+      issues.map((issue) => issue.reporter_id)
+    ),
+  ];
+
+  let reporters: {
+    id: number;
+    name: string;
+    role: string;
+  }[] = [];
+
+  if (reporterIds.length > 0) {
+    const reporterQuery = `
+      SELECT id, name, role
+      FROM users
+      WHERE id = ANY($1)
+    `;
+
+    const reporterResult = await pool.query(
+      reporterQuery,
+      [reporterIds]
+    );
+
+    reporters = reporterResult.rows;
+  }
+
+  const formattedIssues = issues.map((issue) => {
+    const reporter = reporters.find(
+      (user) => user.id === issue.reporter_id
+    );
+
+    return {
+      id: issue.id,
+      title: issue.title,
+      description: issue.description,
+      type: issue.type,
+      status: issue.status,
+
+      reporter: reporter || null,
+
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
+    };
+  });
+
+  return formattedIssues;
+};
+
 export const IssueServices = {
   createIssueIntoDB,
+  getAllIssuesFromDB,
 };
