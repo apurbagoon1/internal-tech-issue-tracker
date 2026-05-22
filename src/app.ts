@@ -4,6 +4,10 @@ import cors from "cors";
 import { AuthRoutes } from "./modules/auth/auth.route";
 import { IssueRoutes } from './modules/issues/issue.route';
 
+import globalErrorHandler from "./middleware/globalErrorHandler";
+
+import notFound from "./middleware/notFound";
+
 const app : Application = express()
 
 app.use(cors());
@@ -19,5 +23,9 @@ app.get('/', (req : Request, res : Response) => {
 
 app.use("/api/auth", AuthRoutes);
 app.use("/api/issues", IssueRoutes);
+
+app.use(notFound);
+
+app.use(globalErrorHandler);
 
 export default app;
