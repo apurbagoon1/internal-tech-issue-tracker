@@ -10,7 +10,11 @@ import notFound from "./middleware/notFound";
 
 const app : Application = express()
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.json());
 
 app.get('/', (req : Request, res : Response) => {
