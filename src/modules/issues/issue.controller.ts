@@ -165,9 +165,45 @@ const updateIssue = async (
   }
 };
 
+const deleteIssue = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const issueId = Number(req.params.id);
+
+    await IssueServices.deleteIssueFromDB(
+      issueId
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Issue deleted successfully",
+      data: null,
+    });
+  } catch (error) {
+    sendResponse(res, {
+      success: false,
+
+      statusCode:
+        error instanceof Error &&
+        error.message === "Issue not found"
+          ? StatusCodes.NOT_FOUND
+          : StatusCodes.INTERNAL_SERVER_ERROR,
+
+      message:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
+    });
+  }
+};
+
 export const IssueControllers = {
   createIssue,
   getAllIssues,
   getSingleIssue,
   updateIssue,
+  deleteIssue,
 };
