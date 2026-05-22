@@ -170,8 +170,95 @@ const getSingleIssueFromDB = async (
   };
 };
 
+const updateIssueIntoDB = async (
+  issueId: number,
+  payload: Partial<TCreateIssue>,
+  user: {
+    id: number;
+    role: string;
+  }
+) => {
+  const issueResult = await pool.query(
+    `
+    SELECT *
+    FROM issues
+    WHERE id = $1
+    `,
+    [issueId]
+  );
+
+  if (issueResult.rows.length === 0) {
+    throw new Error("Issue not found");
+  }
+
+  const issue = issueResult.rows[0];
+
+  if (user.role === "contributor") {
+    if (issue.reporter_id !== user.id) {
+      throw new Error(
+        "You can only update your own issues"
+      );
+    }
+
+    if (issue.status !== "open") {
+      throw new Error(
+        "You cannot update non-open issues"
+      );
+    }
+  }
+
+  if (
+    payload.title &&
+    payload.title.length > 150
+  ) {
+    throw new Error(
+      "Title cannot exceed 150 characters"
+    );
+  }
+
+  if (
+    payload.description &&
+    payload.description.length < 20
+  ) {
+    throw new Error(
+      "Description must be at least 20 characters"
+    );
+  }
+
+  const updatedTitle =
+    payload.title || issue.title;
+
+  const updatedDescription =
+    payload.description || issue.description;
+
+  const updatedType =
+    payload.type || issue.type;
+
+  const updateResult = await pool.query(
+    `
+    UPDATE issues
+    SET
+      title = $1,
+      description = $2,
+      type = $3,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = $4
+    RETURNING *
+    `,
+    [
+      updatedTitle,
+      updatedDescription,
+      updatedType,
+      issueId,
+    ]
+  );
+
+  return updateResult.rows[0];
+};
+
 export const IssueServices = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
+  updateIssueIntoDB,
 };

@@ -105,8 +105,69 @@ const getSingleIssue = async (
   }
 };
 
+const updateIssue = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const issueId = Number(req.params.id);
+
+    const result =
+      await IssueServices.updateIssueIntoDB(
+        issueId,
+        req.body,
+        req.user
+      );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Issue updated successfully",
+      data: result,
+    });
+  } 
+  catch (error) {
+    let statusCode =
+      StatusCodes.INTERNAL_SERVER_ERROR;
+
+    if (
+      error instanceof Error &&
+      error.message === "Issue not found"
+    ) {
+      statusCode = StatusCodes.NOT_FOUND;
+    }
+
+    else if (
+      error instanceof Error &&
+      (
+        error.message ===
+          "You can only update your own issues" ||
+
+        error.message ===
+          "You cannot update non-open issues"
+      )
+    ) {
+      statusCode = StatusCodes.CONFLICT;
+    }
+
+    else if (error instanceof Error) {
+      statusCode = StatusCodes.BAD_REQUEST;
+    }
+
+    sendResponse(res, {
+      success: false,
+      statusCode,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
+    });
+  }
+};
+
 export const IssueControllers = {
   createIssue,
   getAllIssues,
   getSingleIssue,
+  updateIssue,
 };
